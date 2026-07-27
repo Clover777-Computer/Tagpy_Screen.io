@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tagpy - 画面遷移図 & アクティビティ解説 (最新版)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary: #00C853;
+            --primary-light: #69F0AE;
+            --primary-dark: #00953e;
+            --accent: #38bdf8;
+            --accent2: #a78bfa;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --bg-body: #0b1120;
+            --bg-section: rgba(15, 23, 42, 0.85);
+            --card-bg: rgba(30, 41, 59, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-hover: rgba(0, 200, 83, 0.12);
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
+            --text-dim: #64748b;
+            --glass: rgba(255,255,255,0.04);
+            --radius: 18px;
+            --transition: 0.25s cubic-bezier(.4,0,.2,1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', 'Inter', -apple-system, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* ====== Background Glow ====== */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background:
+                radial-gradient(ellipse 600px 400px at 20% 10%, rgba(0,200,83,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 500px 500px at 80% 80%, rgba(56,189,248,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse 400px 300px at 60% 40%, rgba(167,139,250,0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrapper {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 4rem;
+            width: 100%;
+        }
+
+        /* ====== Header ====== */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.2rem;
+            padding: 0.4rem 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,200,83,0.3);
+        }
+
+        header h1 {
+            font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .version-tag {
+            color: var(--primary-light);
+            background: rgba(0, 200, 83, 0.1);
+            border: 1px solid rgba(0, 200, 83, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* ====== Section ====== */
+        .section {
+            background: var(--bg-section);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .section-icon { font-size: 1.3rem; }
+
+        .section-header h2 {
+            font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        /* ====== Mermaid Container ====== */
+        .diagram-wrap {
+            background: rgba(10,15,30,0.75);
+            border-radius: 12px;
+            padding: 1.2rem;
+            overflow-x: auto;
+            max-width: 100%;
+            display: flex;
+            justify-content: center;
+            border: 1px solid var(--card-border);
+        }
+
+        .diagram-wrap .mermaid {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* ====== Quick Nav ====== */
+        .quick-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1.2rem;
+        }
+
+        .quick-nav a {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-main);
+            background: var(--glass);
+            border: 1px solid var(--card-border);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .quick-nav a:hover {
+            background: var(--card-hover);
+            border-color: var(--primary);
+            color: var(--primary-light);
+        }
+
+        /* ====== Activity Detail Cards ====== */
+        .activity-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.2rem;
+            transition: var(--transition);
+            scroll-margin-top: 2rem;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .activity-card:hover {
+            border-color: rgba(0,200,83,0.3);
+            box-shadow: 0 4px 20px rgba(0,200,83,0.08);
+        }
+
+        .activity-card-head {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .activity-number {
+            flex-shrink: 0;
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .activity-card h3 {
+            font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .activity-card .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            font-family: 'Inter', monospace;
+            word-break: break-all;
+        }
+
+        .activity-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 0.8rem;
+            margin-top: 0.8rem;
+            width: 100%;
+        }
+
+        .meta-block {
+            background: var(--glass);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .meta-block h4 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+        }
+
+        .meta-block ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .meta-block li {
+            font-size: 0.82rem;
+            color: var(--text-sub);
+            padding: 0.15rem 0;
+            padding-left: 0.9rem;
+            position: relative;
+            word-break: break-word;
+        }
+
+        .meta-block li::before {
+            content: '›';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .meta-block p {
+            font-size: 0.82rem;
+            color: var(--text-sub);
+            word-break: break-word;
+        }
+
+        .meta-block code, code {
+            background: rgba(0,0,0,0.3);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            font-family: 'Inter', monospace;
+            font-size: 0.78rem;
+            color: var(--accent);
+            word-break: break-all;
+            white-space: normal;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 0.2rem;
+            margin-top: 0.2rem;
+        }
+
+        .badge-green { background: rgba(0,200,83,0.15); color: var(--primary-light); }
+        .badge-blue { background: rgba(56,189,248,0.15); color: var(--accent); }
+        .badge-purple { background: rgba(167,139,250,0.15); color: var(--accent2); }
+        .badge-yellow { background: rgba(251,191,36,0.15); color: var(--warning); }
+        .badge-red { background: rgba(248,113,113,0.15); color: var(--danger); }
+
+        /* ====== Color Coding ====== */
+        .num-startup { background: linear-gradient(135deg, #6366f1, #818cf8); }
+        .num-main { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
+        .num-reg { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .num-ai { background: linear-gradient(135deg, #ec4899, #be185d); }
+        .num-notify { background: linear-gradient(135deg, var(--accent), #0284c7); }
+
+        /* ====== Transition Table ====== */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .transition-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.3rem;
+            font-size: 0.8rem;
+            table-layout: fixed;
+        }
+
+        .transition-table th {
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            padding: 0.4rem 0.3rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .transition-table td {
+            color: var(--text-sub);
+            padding: 0.4rem 0.3rem;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            word-break: break-word;
+        }
+
+        .arrow-cell {
+            color: var(--primary);
+            font-weight: 600;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* ====== Footer ====== */
+        footer {
+            text-align: center;
+            padding-top: 1.5rem;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+
+    <!-- ====== HEADER ====== -->
+    <header>
+        <div class="logo-group">
+            <div class="logo-badge">Tagpy</div>
+            <h1>画面遷移図 & アクティビティ解説</h1>
+        </div>
+    </header>
+
+    <!-- ====== §1 全体フローチャート ====== -->
+    <div class="section">
+        <div class="section-header">
+            <span class="section-icon">🗺️</span>
+            <h2>全体画面遷移フローチャート (最新版)</h2>
+        </div>
+        <div class="diagram-wrap">
+            <pre class="mermaid">
+flowchart TD
+    subgraph Phase1["1. アプリ起動・セットアップ"]
+        START["🚀 アプリ起動 (LAUNCHER)"]
+        TUT["📖 チュートリアル (TutorialActivity)"]
+        PERM["🔐 権限説明 (PermissionExplanation)"]
+        HOME["🏠 ホーム画面 (activity_home)"]
+
+        START -->|"初回"| TUT
+        TUT -->|"次へ"| PERM
+        START -->|"通常起動"| HOME
+        PERM -->|"完了"| HOME
+    end
+
+    subgraph Phase2["2. 主要画面 (共通ナビゲーションバー)"]
+        MAIN["📋 スキャン画面 (MainActivity)"]
+        SET["⚙️ 設定画面 (SettingsActivity)"]
+        NAV["🧭 下部ナビゲーションバー (NavigationUtils)"]
+
+        HOME <--> NAV
+        MAIN <--> NAV
+        SET <--> NAV
+
+        HOME -->|"スキャン開始"| MAIN
+    end
+
+    subgraph Phase3["3. 登録・管理・AI機能"]
+        REG["📝 持ち物登録 (Registration)"]
+        MGMT["🗂️ 持ち物管理 (activity_tag_management)"]
+        AI_REG["📸 AIカメラ登録 (AiCameraRegistration)"]
+        AI_CHK["🔍 AIカメラチェック (AiCameraCheck)"]
+
+        SET -->|"持ち物登録"| REG
+        SET -->|"持ち物管理"| MGMT
+        SET -->|"チュートリアル再表示"| TUT
+
+        MGMT -->|"編集"| REG
+        REG -->|"AI撮影登録"| AI_REG
+        MAIN -->|"AI画像照合"| AI_CHK
+        AI_REG -->|"保存完了"| REG
+        AI_CHK -->|"判定完了"| MAIN
+    end
+
+    subgraph Phase4["4. 通知トリガー起動"]
+        NOTIF["🔔 通知アラート (NotificationReceiver)"]
+        PRE["✅ 事前チェック (PreCheckActivity)"]
+
+        NOTIF -->|"出発前アラート"| MAIN
+        NOTIF -->|"天気AI通知"| HOME
+        NOTIF -->|"前日リマインド"| PRE
+        PRE -->|"AI照合"| AI_CHK
+    end
+
+    classDef startStyle fill:#3730a3,stroke:#818cf8,color:#fff;
+    classDef mainStyle fill:#065f46,stroke:#34d399,color:#fff;
+    classDef subStyle fill:#92400e,stroke:#fbbf24,color:#fff;
+    classDef aiStyle fill:#9d174d,stroke:#f472b6,color:#fff;
+    classDef navStyle fill:#075985,stroke:#38bdf8,color:#fff;
+
+    class START startStyle;
+    class HOME,MAIN,SET mainStyle;
+    class REG,MGMT,PRE subStyle;
+    class AI_REG,AI_CHK aiStyle;
+    class NAV navStyle;
+            </pre>
+        </div>
+
+        <!-- Quick Navigation Links -->
+        <div class="quick-nav">
+            <span style="font-size:0.75rem;color:var(--text-dim);width:100%;">▶ 詳細解説へのジャンプリンク:</span>
+            <a href="#act-tutorial">📖 1. チュートリアル</a>
+            <a href="#act-permission">🔐 2. 権限説明</a>
+            <a href="#act-home">🏠 3. ホーム</a>
+            <a href="#act-main">📋 4. スキャン</a>
+            <a href="#act-settings">⚙️ 5. 設定</a>
+            <a href="#act-registration">📝 6. 持ち物登録</a>
+            <a href="#act-tagmgmt">🗂️ 7. 持ち物管理</a>
+            <a href="#act-ai-reg">📸 8. AIカメラ登録</a>
+            <a href="#act-ai-check">🔍 9. AIカメラチェック</a>
+            <a href="#act-precheck">✅ 10. 事前チェック</a>
+        </div>
+    </div>
+
+    <!-- ====== §2 各アクティビティ詳細解説 ====== -->
+    <div class="section">
+        <div class="section-header">
+            <span class="section-icon">📱</span>
+            <h2>各アクティビティ詳細解説</h2>
+        </div>
+
+        <!-- ---- 1. TutorialActivity ---- -->
+        <div class="activity-card" id="act-tutorial">
+            <div class="activity-card-head">
+                <div class="activity-number num-startup">1</div>
+                <div>
+                    <h3>📖 チュートリアル画面</h3>
+                    <div class="subtitle">TutorialActivity.java → activity_tutorial.xml</div>
+                    <span class="badge badge-purple">LAUNCHER</span>
+                </div>
+            </div>
+            <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:0.5rem;">
+                アプリ初回起動時に表示される<strong>5ページスライド形式</strong>のガイド画面。NFC登録手順やリスト操作方法を解説。設定画面から「チュートリアル再表示」として再訪可能。
+            </p>
+            <div class="activity-meta">
+                <div class="meta-block">
+                    <h4 style="color:var(--primary);">📄 主要機能</h4>
+                    <ul>
+                        <li>5ページのスライドコンテンツ（インジケーター付）</li>
+                        <li>「次へ」「戻る」ボタン制御</li>
+                        <li>初回完了フラグを <code>SharedPreferences</code> に保存</li>
+                        <li>LAUNCHER エントリーポイント</li>
+                    </ul>
+                </div>
+                <div class="meta-block">
+                    <h4 style="color:var(--accent);">🔀 画面遷移</h4>
+                    <div class="table-responsive">
+                        <table class="transition-table">
+                            <col style="width: 45%;">
+                            <col style="width: 10%;">
+                            <col style="width: 45%;">
+                            <tr><th>トリガー</th><th></th><th>遷移先</th></tr>
+                            <tr><td>最終ページ完了（初回）</td><td class="arrow-cell">→</td><td>PermissionExplanationActivity</td></tr>
+                            <tr><td>設定画面から来た場合</td><td class="arrow-cell">→</td><td>finish()（設定に戻る）</td></tr>
+                            <tr><td>起動時 完了済&権限OK</td><td class="arrow-cell">→</td><td>activity_home（スキップ）</td></tr>
+                            <tr><td>起動時 完了済&権限不足</td><td class="arrow-cell">→</td><td>PermissionExplanationActivity</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ---- 2. PermissionExplanationActivity ---- -->
+        <div class="activity-card" id="act-permission">
+            <div class="activity-card-head">
+                <div class="activity-number num-startup">2</div>
+                <div>
+                    <h3>🔐 権限説明画面</h3>
+                    <div class="subtitle">PermissionExplanationActivity.java → activity_permission_explanation.xml</div>
+                </div>
+            </div>
+            <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:0.5rem;">
+                NFC・通知・カメラ・Bluetooth・カレンダーの5種類の権限を段階的に説明し許可を促すウィザード画面。全権限モードと不足分のみモードを搭載。
+            </p>
+            <div class="activity-meta">
+                <div class="meta-block">
+                    <h4 style="color:var(--primary);">📄 主要機能</h4>
+                    <ul>
+                        <li>ステップバイステップで権限説明を表示</li>
+                        <li>全権限モード / 不足分のみモード</li>
+                        <li>「設定する」ボタンで OS 権限ダイアログ起動</li>
+                        <li>NFC は端末NFC設定画面へインテント起動</li>
+                    </ul>
+                </div>
+                <div class="meta-block">
+                    <h4 style="color:var(--accent);">🔀 画面遷移</h4>
+                    <div class="table-responsive">
+                        <table class="transition-table">
+                            <col style="width: 45%;">
+                            <col style="width: 10%;">
+                            <col style="width: 45%;">
+                            <tr><th>トリガー</th><th></th><th>遷移先</th></tr>
+                            <tr><td>ウィザード完了</td><td class="arrow-cell">→</td><td>activity_home</td></tr>
+                            <tr><td>NFC設定ボタン</td><td class="arrow-cell">→</td><td>端末のNFC設定画面</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ---- 3. activity_home ---- -->
+        <div class="activity-card" id="act-home">
+            <div class="activity-card-head">
+                <div class="activity-number num-main">3</div>
+                <div>
+                    <h3>🏠 ホーム画面</h3>
+                    <div class="subtitle">activity_home.java → activity_home.xml</div>
+                    <span class="badge badge-green">メイン画面</span>
+                    <span class="badge badge-blue">下部ナビゲーションバー対応</span>
+                </div>
+            </div>
+            <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:0.5rem;">
+                アプリのメインダッシュボード。日付、天気予報、AIサジェスト、本日の持ち物リストを集約表示。雨判定による自動フィルタリング機能付き。
+            </p>
+            <div class="activity-meta">
+                <div class="meta-block">
+                    <h4 style="color:var(--primary);">📄 主要機能</h4>
+                    <ul>
+                        <li>天気予報API取得＆表示（地域・気温・雨判定）</li>
+                        <li>雨判定による「雨の日のみ」表示自動切り替え</li>
+                        <li>Gemini API連携のAIおすすめ持ち物サジェスト</li>
+                        <li>今日の持ち物リスト表示＆チェック状態リセット</li>
+                    </ul>
+                </div>
+                <div class="meta-block">
+                    <h4 style="color:var(--accent);">🔀 画面遷移</h4>
+                    <div class="table-responsive">
+                        <table class="transition-table">
+                            <col style="width: 45%;">
+                            <col style="width: 10%;">
+                            <col style="width: 45%;">
+                            <tr><th>トリガー</th><th></th><th>遷移先</th></tr>
+                            <tr><td>「スキャン開始」ボタン</td><td class="arrow-cell">→</td><td>MainActivity</td></tr>
+                            <tr><td>下部ナビゲーションバー「リスト」</td><td class="arrow-cell">→</td><td>MainActivity</td></tr>
+                            <tr><td>下部ナビゲーションバー「設定」</td><td class="arrow-cell">→</td><td>SettingsActivity</td></tr>
+                            <tr><td>権限不足検知時</td><td class="arrow-cell">→</td><td>PermissionExplanationActivity</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ---- 4. MainActivity ---- -->
+        <div class="activity-card" id="act-main">
+            <div class="activity-card-head">
+                <div class="activity-number num-main">4</div>
+                <div>
+                    <h3>📋 スキャン（持ち物チェック）画面</h3>
+                    <div class="subtitle">MainActivity.java → activity_main.xml</div>
+                    <span class="badge badge-green">メイン画面</span>
+                    <span class="badge badge-blue">下部ナビゲーションバー対応</span>
+                </div>
+            </div>
+            <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:0.5rem;">
+                出発前の持ち物チェック画面。NFCタグをスマホにかざすと自動でチェックが付きます。AIカメラ対象がある場合はカメラチェック画面も起動可能。
+            </p>
+            <div class="activity-meta">
+                <div class="meta-block">
+                    <h4 style="color:var(--primary);">📄 主要機能</h4>
+                    <ul>
+                        <li>NFC リアルタイムタグ検知＆チェック状態更新</li>
+                        <li>チェック進捗率の表示（例: 3/5）</li>
+                        <li>全チェック完了時のコンプリート通知</li>
+                        <li>AIカメラ連携（<code>ActivityResultLauncher</code>）</li>
+                    </ul>
+                </div>
+                <div class="meta-block">
+                    <h4 style="color:var(--accent);">🔀 画面遷移</h4>
+                    <div class="table-responsive">
+                        <table class="transition-table">
+                            <col style="width: 45%;">
+                            <col style="width: 10%;">
+                            <col style="width: 45%;">
+                            <tr><th>トリガー</th><th></th><th>遷移先</th></tr>
+                            <tr><td>AIカメラ起動ボタン</td><td class="arrow-cell">→</td><td>AiCameraCheckActivity</td></tr>
+                            <tr><td>下部ナビゲーションバー「ホーム」</td><td class="arrow-cell">→</td><td>activity_home</td></tr>
+                            <tr><td>下部ナビゲーションバー「設定」</td><td class="arrow-cell">→</td><td>SettingsActivity</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ---- 5. SettingsActivity ---- -->
+        <div class="activity-card" id="act-settings">
+            <div class="activity-card-head">
+                <div class="activity-number num-main">5</div>
+                <div>
+                    <h3>⚙️ 設定画面</h3>
+                    <div class="subtitle">SettingsActivity.java → activity_settings.xml</div>
+                    <span class="badge badge-green">メイン画面</span>
+                    <span class="badge badge-blue">下部ナビゲーションバー対応</span>
+                </div>
+            </div>
+            <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:0.5rem;">
+                アプリの設定ハブ画面。Bluetooth設定、持ち物登録/管理への導線、通知設定（時刻指定）、地域設定、チュートリアル再表示を集約。
+            </p>
+            <div class="activity-meta">
+                <div class="meta-block">
+                    <h4 style="color:var(--primary);">📄 主要機能</h4>
+                    <ul>
+                        <li>Bluetooth設定（端末設定へ遷移）</li>
+                        <li>持ち物登録 / 持ち物管理 への画面遷移</li>
+                        <li>3種の通知時刻設定（TimePicker）</li>
+                        <li>天気予報 地域選択ダイアログ呼び出し</li>
+                        <li>チュートリアル再表示</li>
+                    </ul>
+                </div>
+                <div class="meta-block">
+                    <h4 style="color:var(--accent);">🔀 画面遷移</h4>
+                    <div class="table-responsive">
+                        <table class="transition-table">
+                            <col style="width: 45%;">
+                            <col style="width: 10%;">
+                            <col style="width: 45%;">
+                            <tr><th>トリガー</th><th></th><th>遷移先</th></tr>
+                            <tr><td>Bluetooth設定</td><td class="arrow-cell">→</td><td>端末 Bluetooth 設定</td></tr>
+                            <tr><td>持ち物登録</td><td class="arrow-cell">→</td><td>Registration</td></tr>
+                            <tr><td>持ち物管理</td><td class="arrow-cell">→</td><td>activity_tag_management</td></tr>
+                            <tr><td>地域設定</td><td class="arrow-cell">→</td><td>地域選択ダイアログ</td></tr>
+                            <tr><td>チュートリアル</td><td class="arrow-cell">→</td><td>TutorialActivity</td></tr>
+                            <tr><td>下部ナビゲーションバー「ホーム」</td><td class="arrow-cell">→</td><td>activity_home</td></tr>
+                            <tr><td>下部ナビゲーションバー「リスト」</td><td class="arrow-cell">→</td><td>MainActivity</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ---- 6. Registration ---- -->
+        <div class="activity-card" id="act-registration">
+            <div class="activity-card-head">
+                <div class="activity-number num-reg">6</div>
+                <div>
+                    <h3>📝 持ち物登録画面</h3>
+                    <div class="subtitle">Registration.java → activity_registration.xml</div>
+                </div>
+            </div>
+            <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:0.5rem;">
+                持ち物をNFCタグやAIカメラで登録する画面。手動入力とプリセット選択の2タブ構成で、曜日、雨の日、Bluetooth機器などを設定。編集モード対応。
+            </p>
+            <div class="activity-meta">
+                <div class="meta-block">
+                    <h4 style="color:var(--primary);">📄 主要機能</h4>
+                    <ul>
+                        <li>手動登録 / プリセット登録 タブ切替</li>
+                        <li>NFCタグかざし書き込みダイアログ</li>
+                        <li>曜日、雨の日、Bluetooth機器設定</li>
+                        <li>AIカメラ学習画面の呼び出し</li>
+                        <li>編集モード（既存データ読み込み）</li>
+                    </ul>
+                </div>
+                <div class="meta-block">
+                    <h4 style="color:var(--accent);">🔀 画面遷移</h4>
+                    <div class="table-responsive">
+                        <table class="transition-table">
+                            <col style="width: 45%;">
+                            <col style="width: 10%;">
+                            <col style="width: 45%;">
+                            <tr><th>トリガー</th><th></th><th>遷移先</th></tr>
+                            <tr><td>AIカメラ登録ボタン</td><td class="arrow-cell">→</td><td>AiCameraRegistrationActivity</td></tr>
+                            <tr><td>NFCかざし</td><td class="arrow-cell">→</td><td>NFCスキャンダイアログ</td></tr>
+                            <tr><td>登録完了</td><td class="arrow-cell">→</td><td>activity_home</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ---- 7. activity_tag_management ---- -->
+        <div class="activity-card" id="act-tagmgmt">
+            <div class="activity-card-head">
+                <div class="activity-number num-reg">7</div>
+                <div>
+                    <h3>🗂️ 持ち物管理画面</h3>
+                    <div class="subtitle">activity_tag_management.java → activity_tag_management.xml</div>
+                </div>
+            </div>
+            <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:0.5rem;">
+                登録済みの持ち物一覧を表示し編集・削除を行う管理画面。タップで編集画面へ、削除ボタンで確認ダイアログを表示。
+            </p>
+            <div class="activity-meta">
+                <div class="meta-block">
+                    <h4 style="color:var(--primary);">📄 主要機能</h4>
+                    <ul>
+                        <li>登録済み持ち物タグの一覧リスト表示</li>
+                        <li>編集ボタン → 編集モードで Registration へ遷移</li>
+                        <li>削除ボタン → 確認ダイアログ後削除実行</li>
+                    </ul>
+                </div>
+                <div class="meta-block">
+                    <h4 style="color:var(--accent);">🔀 画面遷移</h4>
+                    <div class="table-responsive">
+                        <table class="transition-table">
+                            <col style="width: 45%;">
+                            <col style="width: 10%;">
+                            <col style="width: 45%;">
+                            <tr><th>トリガー</th><th></th><th>遷移先</th></tr>
+                            <tr><td>編集ボタン</td><td class="arrow-cell">→</td><td>Registration（編集モード）</td></tr>
+                            <tr><td>削除ボタン</td><td class="arrow-cell">→</td><td>削除確認ダイアログ</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ---- 8. AiCameraRegistrationActivity ---- -->
+        <div class="activity-card" id="act-ai-reg">
+            <div class="activity-card-head">
+                <div class="activity-number num-ai">8</div>
+                <div>
+                    <h3>📸 AIカメラ登録画面</h3>
+                    <div class="subtitle">AiCameraRegistrationActivity.java → activity_ai_camera_registration.xml</div>
+                    <span class="badge badge-purple">ML Kit</span>
+                </div>
+            </div>
+            <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:0.5rem;">
+                撮影した物体を ML Kit で解析し、色特徴を自動抽出して登録する画面。枠指定と色選択でAI判別データを生成。
+            </p>
+            <div class="activity-meta">
+                <div class="meta-block">
+                    <h4 style="color:var(--primary);">📄 主要機能</h4>
+                    <ul>
+                        <li>CameraX 撮影 ＋ ML Kit 物体検出</li>
+                        <li>検出枠（バウンディングボックス）選択</li>
+                        <li>色特徴抽出＋手動選択ダイアログ</li>
+                        <li>学習データの保存と返却</li>
+                    </ul>
+                </div>
+                <div class="meta-block">
+                    <h4 style="color:var(--accent);">🔀 画面遷移</h4>
+                    <div class="table-responsive">
+                        <table class="transition-table">
+                            <col style="width: 45%;">
+                            <col style="width: 10%;">
+                            <col style="width: 45%;">
+                            <tr><th>トリガー</th><th></th><th>遷移先</th></tr>
+                            <tr><td>学習完了</td><td class="arrow-cell">→</td><td>Registration へ結果返却</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ---- 9. AiCameraCheckActivity ---- -->
+        <div class="activity-card" id="act-ai-check">
+            <div class="activity-card-head">
+                <div class="activity-number num-ai">9</div>
+                <div>
+                    <h3>🔍 AIカメラチェック画面</h3>
+                    <div class="subtitle">AiCameraCheckActivity.java → activity_ai_camera_check.xml</div>
+                    <span class="badge badge-purple">リアルタイム照合</span>
+                </div>
+            </div>
+            <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:0.5rem;">
+                カメラ映像からリアルタイムでAI登録アイテムを照合・チェックする画面。検出結果を返却します。
+            </p>
+            <div class="activity-meta">
+                <div class="meta-block">
+                    <h4 style="color:var(--primary);">📄 主要機能</h4>
+                    <ul>
+                        <li>CameraX リアルタイム映像解析</li>
+                        <li>登録済みAI色特徴との照合</li>
+                        <li>見つかったタグIDリストの返却</li>
+                    </ul>
+                </div>
+                <div class="meta-block">
+                    <h4 style="color:var(--accent);">🔀 画面遷移</h4>
+                    <div class="table-responsive">
+                        <table class="transition-table">
+                            <col style="width: 45%;">
+                            <col style="width: 10%;">
+                            <col style="width: 45%;">
+                            <tr><th>トリガー</th><th></th><th>遷移先</th></tr>
+                            <tr><td>照合完了</td><td class="arrow-cell">→</td><td>MainActivity / PreCheckActivity に結果返却</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ---- 10. PreCheckActivity ---- -->
+        <div class="activity-card" id="act-precheck">
+            <div class="activity-card-head">
+                <div class="activity-number num-notify">10</div>
+                <div>
+                    <h3>✅ 事前チェック画面</h3>
+                    <div class="subtitle">PreCheckActivity.java → activity_pre_check.xml</div>
+                    <span class="badge badge-blue">通知起動</span>
+                </div>
+            </div>
+            <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:0.5rem;">
+                前日夜の通知から起動する翌日分の事前持ち物チェック画面。AIカメラ照合も可能。
+            </p>
+            <div class="activity-meta">
+                <div class="meta-block">
+                    <h4 style="color:var(--primary);">📄 主要機能</h4>
+                    <ul>
+                        <li>翌日曜日ベースの持ち物リスト生成</li>
+                        <li>事前チェック機能</li>
+                        <li>AIカメラ起動連携</li>
+                    </ul>
+                </div>
+                <div class="meta-block">
+                    <h4 style="color:var(--accent);">🔀 画面遷移</h4>
+                    <div class="table-responsive">
+                        <table class="transition-table">
+                            <col style="width: 45%;">
+                            <col style="width: 10%;">
+                            <col style="width: 45%;">
+                            <tr><th>トリガー</th><th></th><th>遷移先</th></tr>
+                            <tr><td>AIカメラ起動</td><td class="arrow-cell">→</td><td>AiCameraCheckActivity</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+<script>
+    mermaid.initialize({
+        startOnLoad: true,
+        theme: 'dark',
+        flowchart: { curve: 'basis', useMaxWidth: true }
+    });
+</script>
+</body>
+</html>
